@@ -1,0 +1,34 @@
+{
+    "title": "ETS 2024 Test 2",
+    "type": "FULL",
+    "duration": 7200,
+    "parts": [
+        {
+            "partNumber": 5,
+            "questions": [
+                {
+                    "content": "The conference organizers _______ the venue to accommodate more participants.",
+                    "options": {
+                        "A": "expanded",
+                        "B": "expansion",
+                        "C": "expansive",
+                        "D": "expand"
+                    },
+                    "correctOpt": "A",
+                    "explanation": "We need the past tense verb 'expanded' to complete the sentence."
+                },
+                {
+                    "content": "All employees are required to attend the _______ training session next week.",
+                    "options": {
+                        "A": "mandate",
+                        "B": "mandatory",
+                        "C": "mandatorily",
+                        "D": "mandating"
+                    },
+                    "correctOpt": "B",
+                    "explanation": "We need an adjective 'mandatory' to modify 'training session'."
+                }
+            ]
+        }
+    ]
+}

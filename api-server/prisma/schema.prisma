@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum TestType {
+  FULL
+  MINI
+  PART
+}
+
+enum CardState {
+  NEW
+  LEARNING
+  REVIEW
+  RELEARNING
+}
+
+// Models
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  fullName      String?
+  avatarUrl     String?
+  targetScore   Int       @default(450)
+  currentScore  Int?      // Latest placement score
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          UserRole  @default(USER)
+
+  testSessions  TestSession[]
+  flashcards    UserFlashcard[]
+}
+
+model Test {
+  id          String    @id @default(uuid())
+  title       String
+  type        TestType  @default(FULL)
+  duration    Int       // in seconds
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  parts       Part[]
+  sessions    TestSession[]
+}
+
+model Part {
+  id          String    @id @default(uuid())
+  testId      String
+  test        Test      @relation(fields: [testId], references: [id])
+  partNumber  Int       // 1-7, or grouped like 1 (Part 1), 2 (Part 5) etc.
+  
+  questions   Question[]
+}
+
+model Question {
+  id          String    @id @default(uuid())
+  partId      String
+  part        Part      @relation(fields: [partId], references: [id])
+  content     String?   // Text content
+  imageUrl    String?   // For Part 1 matches
+  audioUrl    String?   // Audio fragment
+  transcript  String?
+  
+  options     Json      // { A: "...", B: "...", C: "...", D: "..." }
+  correctOpt  String    // "A", "B", "C", "D"
+  explanation String?   // Markdown/HTML explanation
+  
+  flashcardItem FlashcardItem?
+}
+
+// Test Session (History)
+model TestSession {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  testId        String
+  test          Test      @relation(fields: [testId], references: [id])
+  score         Int?
+  durationTaken Int       // seconds
+  submittedAt   DateTime  @default(now())
+  
+  answers       Json      // [{ questionId, selectedOption, isCorrect, timeSpent }]
+}
+
+// SRS / Vocabulary
+model FlashcardItem {
+  id            String @id @default(uuid())
+  word          String
+  definition    String
+  pronunciation String?
+  example       String?
+  questionId    String? @unique
+  question      Question? @relation(fields: [questionId], references: [id])
+  
+  userProgress  UserFlashcard[]
+}
+
+model UserFlashcard {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  flashcardId   String
+  flashcard     FlashcardItem @relation(fields: [flashcardId], references: [id])
+  
+  state         CardState @default(NEW)
+  stability     Float    // FSRS stability
+  difficulty    Float    // FSRS difficulty
+  due           DateTime 
+  lastReview    DateTime @default(now())
+  
+  @@unique([userId, flashcardId])
+}
