@@ -109,7 +109,15 @@ export class TestSessionsService {
         const session = await this.prisma.testSession.findUnique({
             where: { id: sessionId },
             include: {
-                test: true,
+                test: {
+                    include: {
+                        parts: {
+                            include: {
+                                questions: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -117,13 +125,22 @@ export class TestSessionsService {
             throw new Error('Session not found');
         }
 
+        // Calculate total questions and correct answers
+        const totalQuestions = session.test.parts.flatMap(p => p.questions).length;
+        const answers = Array.isArray(session.answers) ? session.answers : [];
+        const correctCount = answers.filter((a: any) => a.isCorrect).length;
+
         return {
             sessionId: session.id,
             testTitle: session.test.title,
+            testType: session.test.type,
             score: session.score,
+            correctCount,
+            totalQuestions,
             durationTaken: session.durationTaken,
             submittedAt: session.submittedAt,
             answers: session.answers,
+            test: session.test, // Include full test data for review
         };
     }
 
@@ -143,8 +160,11 @@ export class TestSessionsService {
 
         return sessions.map((s) => ({
             sessionId: s.id,
+            testId: s.testId,
             testTitle: s.test.title,
+            testType: s.test.type,
             score: s.score,
+            durationTaken: s.durationTaken,
             submittedAt: s.submittedAt,
         }));
     }

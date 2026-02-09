@@ -5,11 +5,29 @@ import { getTestById } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import { startTestSession } from '@/lib/api';
+import { DEMO_USER_ID } from '@/lib/constants';
 
 export default function TestDetailPage() {
     const params = useParams();
     const router = useRouter();
     const testId = params.id as string;
+    const [isStarting, setIsStarting] = useState(false);
+
+    const handleStartTest = async () => {
+        if (isStarting) return;
+
+        try {
+            setIsStarting(true);
+            const data = await startTestSession(DEMO_USER_ID, testId);
+            router.push(`/tests/${testId}/take?sessionId=${data.sessionId}`);
+        } catch (error) {
+            console.error('Failed to start test:', error);
+            alert('Có lỗi xảy ra khi bắt đầu bài thi. Vui lòng thử lại.');
+            setIsStarting(false);
+        }
+    };
 
     const { data: test, isLoading, error } = useQuery({
         queryKey: ['test', testId],
@@ -55,12 +73,13 @@ export default function TestDetailPage() {
                                 {test.type}
                             </span>
                         </div>
-                        <Link
-                            href={`/tests/${test.id}/take`}
-                            className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all hover:scale-105 shadow-lg"
+                        <button
+                            onClick={handleStartTest}
+                            disabled={isStarting}
+                            className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all hover:scale-105 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            Làm bài thi
-                        </Link>
+                            {isStarting ? 'Đang tạo bài thi...' : 'Làm bài thi'}
+                        </button>
                     </div>
 
                     <div className="p-8">

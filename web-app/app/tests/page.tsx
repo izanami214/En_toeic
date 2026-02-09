@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getTests } from '@/lib/api';
 import Link from 'next/link';
-import { BookOpen, Clock } from 'lucide-react';
+import { BookOpen, Clock, History } from 'lucide-react';
 
 export default function TestsPage() {
     const { data: tests, isLoading, error } = useQuery({
@@ -30,9 +30,27 @@ export default function TestsPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
             <div className="max-w-6xl mx-auto">
-                <h1 className="text-4xl font-bold text-gray-800 mb-8">
-                    Danh sách Đề thi TOEIC
-                </h1>
+                <div className="flex justify-between items-center mb-8">
+                    <h1 className="text-4xl font-bold text-gray-800">
+                        Danh sách Đề thi TOEIC
+                    </h1>
+                    <div className="flex gap-3">
+                        <Link
+                            href="/"
+                            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all hover:scale-105 shadow-md"
+                        >
+                            <BookOpen className="w-5 h-5" />
+                            Trang chủ
+                        </Link>
+                        <Link
+                            href="/history"
+                            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-all hover:scale-105 shadow-md"
+                        >
+                            <History className="w-5 h-5" />
+                            Lịch sử làm bài
+                        </Link>
+                    </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {tests?.map((test: any) => (

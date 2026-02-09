@@ -1,60 +1,50 @@
-import Link from 'next/link';
-import { BookOpen, Target, TrendingUp } from 'lucide-react';
+import HeroSection from '@/components/home/HeroSection';
+import StatsOverview from '@/components/home/StatsOverview';
+import FeatureGrid from '@/components/home/FeatureGrid';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <h1 className="text-6xl font-bold text-white mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
             TOEIC Master AI
           </h1>
-          <p className="text-2xl text-blue-100 mb-8">
-            Nền tảng luyện thi TOEIC thông minh với AI
+          <p className="text-gray-600">
+            Nền tảng luyện thi TOEIC thông minh
           </p>
-          <div className="flex gap-4 justify-center">
-            <Link
-              href="/tests"
-              className="inline-flex items-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-50 transition-all hover:scale-105 shadow-xl"
-            >
-              <BookOpen className="w-6 h-6" />
-              Bắt đầu luyện thi
-            </Link>
-            <Link
-              href="/flashcards"
-              className="inline-flex items-center gap-2 bg-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-purple-700 transition-all hover:scale-105 shadow-xl"
-            >
-              <Target className="w-6 h-6" />
-              Ôn từ vựng
-            </Link>
-          </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-20">
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-white">
-            <Target className="w-12 h-12 mb-4" />
-            <h3 className="text-xl font-bold mb-3">Đề thi sát thực tế</h3>
-            <p className="text-blue-100">
-              Bộ đề thi chuẩn ETS, mô phỏng 100% kỳ thi thật
-            </p>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-white">
-            <TrendingUp className="w-12 h-12 mb-4" />
-            <h3 className="text-xl font-bold mb-3">Phân tích chi tiết</h3>
-            <p className="text-blue-100">
-              Thống kê lỗ hổng kiến thức, gợi ý lộ trình học cá nhân
-            </p>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-white">
-            <BookOpen className="w-12 h-12 mb-4" />
-            <h3 className="text-xl font-bold mb-3">Flashcard thông minh</h3>
-            <p className="text-blue-100">
-              Hệ thống SRS giúp ghi nhớ từ vựng hiệu quả
-            </p>
-          </div>
+        {/* Hero Section */}
+        <div className="mb-8">
+          <HeroSection />
         </div>
+
+        {/* Stats Overview */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <span className="w-1 h-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
+            Thống kê của bạn
+          </h2>
+          <StatsOverview />
+        </div>
+
+        {/* Feature Grid */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <span className="w-1 h-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></span>
+            Tính năng nổi bật
+          </h2>
+          <FeatureGrid />
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-16 pt-8 border-t border-gray-200">
+          <div className="text-center text-gray-500 text-sm">
+            <p>© 2026 TOEIC Master AI. All rights reserved.</p>
+          </div>
+        </footer>
       </div>
     </div>
   );
