@@ -7,11 +7,12 @@ import Link from 'next/link';
 import { ArrowLeft, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { startTestSession } from '@/lib/api';
-import { DEMO_USER_ID } from '@/lib/constants';
+import { useAuthStore } from '@/lib/auth-store';
 
 export default function TestDetailPage() {
     const params = useParams();
     const router = useRouter();
+    const { user } = useAuthStore();
     const testId = params.id as string;
     const [isStarting, setIsStarting] = useState(false);
 
@@ -19,8 +20,12 @@ export default function TestDetailPage() {
         if (isStarting) return;
 
         try {
+            if (!user?.id) {
+                alert('Vui lòng đăng nhập để làm bài thi.');
+                return;
+            }
             setIsStarting(true);
-            const data = await startTestSession(DEMO_USER_ID, testId);
+            const data = await startTestSession(user.id, testId);
             router.push(`/tests/${testId}/take?sessionId=${data.sessionId}`);
         } catch (error) {
             console.error('Failed to start test:', error);

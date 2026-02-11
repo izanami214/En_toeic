@@ -2,13 +2,16 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getUserTestHistory } from '@/lib/api';
-import { DEMO_USER_ID } from '@/lib/constants';
+import { useAuthStore } from '@/lib/auth-store';
 import { Trophy, Target, BookOpen, TrendingUp } from 'lucide-react';
 
 export default function StatsOverview() {
+    const { user } = useAuthStore();
+    const userId = user?.id;
     const { data: sessions, isLoading } = useQuery({
-        queryKey: ['history', DEMO_USER_ID],
-        queryFn: () => getUserTestHistory(DEMO_USER_ID),
+        queryKey: ['history', userId],
+        queryFn: () => getUserTestHistory(userId || ''),
+        enabled: !!userId,
     });
 
     const testsTaken = sessions?.length || 0;

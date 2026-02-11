@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getUserTestHistory } from '@/lib/api';
-import { DEMO_USER_ID } from '@/lib/constants';
+import { useAuthStore } from '@/lib/auth-store';
 import { Calendar, Clock, Trophy, ArrowLeft, RefreshCw, Eye, Filter, BarChart2, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -15,12 +15,15 @@ type SortOption = 'date-desc' | 'date-asc' | 'score-desc' | 'score-asc';
 
 export default function HistoryPage() {
     const router = useRouter();
+    const { user } = useAuthStore();
+    const userId = user?.id;
     const [filterType, setFilterType] = useState<TestType>('ALL');
     const [sortBy, setSortBy] = useState<SortOption>('date-desc');
 
     const { data: sessions, isLoading, error } = useQuery({
-        queryKey: ['history', DEMO_USER_ID],
-        queryFn: () => getUserTestHistory(DEMO_USER_ID),
+        queryKey: ['history', userId],
+        queryFn: () => getUserTestHistory(userId || ''),
+        enabled: !!userId,
     });
 
     if (isLoading) {

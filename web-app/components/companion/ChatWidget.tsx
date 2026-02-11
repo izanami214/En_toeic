@@ -6,6 +6,8 @@ import { BookOpen, History, MessageCircle, Target, X, Lightbulb, Settings, Send,
 import DailyWord from './features/DailyWord';
 import MiniQuiz from './features/MiniQuiz';
 import { useChat } from '@/hooks/useChat';
+import { useAuthStore } from '@/lib/auth-store';
+import { useRouter } from 'next/navigation';
 
 interface ChatWidgetProps {
     onClose: () => void;
@@ -20,9 +22,11 @@ export default function ChatWidget({ onClose }: ChatWidgetProps) {
     const [loadingSessions, setLoadingSessions] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // TODO: Get actual user ID from auth context
-    // For now, using the first user from database
-    const userId = '63fec151-3dfc-496d-8281-ba236a57b1d3';
+    const router = useRouter();
+
+    const { user } = useAuthStore();
+    const userId = user?.id || '';
+
     const { messages, isLoading, sendMessage, resetSession, deleteSession, sessionId } = useChat(userId);
 
     const scrollToBottom = () => {
@@ -125,287 +129,306 @@ export default function ChatWidget({ onClose }: ChatWidgetProps) {
                         >
                             <X className="w-5 h-5" />
                         </button>
-                    </div>
-                </div>
+                    </div>                </div>
 
-                {/* History Modal */}
-                {showHistory && (
-                    <div className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-2xl w-full max-w-sm max-h-[80%] overflow-hidden flex flex-col shadow-2xl">
-                            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 flex items-center justify-between">
-                                <h3 className="text-white font-bold">Lịch sử chat</h3>
-                                <button
-                                    onClick={() => setShowHistory(false)}
-                                    className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-                            <div className="flex-1 overflow-y-auto p-4">
-                                {loadingSessions ? (
-                                    <div className="text-center py-8 text-gray-500">Đang tải...</div>
-                                ) : sessions.length === 0 ? (
-                                    <div className="text-center py-8 text-gray-500">Chưa có lịch sử chat nào</div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        {sessions.map((session) => (
-                                            <div
-                                                key={session.id}
-                                                className={`p-3 rounded-xl border-2 transition-all cursor-pointer hover:bg-blue-50 ${session.id === sessionId
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-200 hover:border-blue-300'
-                                                    }`}
-                                                onClick={() => loadSession(session.id)}
-                                            >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        <p className="font-medium text-gray-800 text-sm line-clamp-2">
-                                                            {session.title || 'Cuộc trò chuyện mới'}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500 mt-1">
-                                                            {new Date(session.updatedAt).toLocaleDateString('vi-VN', {
-                                                                day: '2-digit',
-                                                                month: '2-digit',
-                                                                year: 'numeric',
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                            })}
-                                                        </p>
-                                                    </div>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setDeleteConfirmSessionId(session.id);
-                                                        }}
-                                                        className="text-red-500 hover:bg-red-100 rounded-full p-1 ml-2"
+                {!userId ? (
+                    <div className="p-8 text-center h-[400px] flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <Lightbulb className="w-8 h-8 text-blue-600 animate-bounce" />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">Xin chào!</h3>
+                        <p className="text-gray-600 mb-6 text-sm">
+                            Vui lòng đăng nhập để trò chuyện với Tobi và lưu lại lịch sử học tập nhé!
+                        </p>
+                        <button
+                            onClick={() => router.push('/login')}
+                            className="bg-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+                        >
+                            Đăng nhập ngay
+                        </button>
+                    </div>
+                ) : (
+                    <>
+                        {/* History Modal */}
+                        {showHistory && (
+                            <div className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                                <div className="bg-white rounded-2xl w-full max-w-sm max-h-[80%] overflow-hidden flex flex-col shadow-2xl">
+                                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 flex items-center justify-between">
+                                        <h3 className="text-white font-bold">Lịch sử chat</h3>
+                                        <button
+                                            onClick={() => setShowHistory(false)}
+                                            className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto p-4">
+                                        {loadingSessions ? (
+                                            <div className="text-center py-8 text-gray-500">Đang tải...</div>
+                                        ) : sessions.length === 0 ? (
+                                            <div className="text-center py-8 text-gray-500">Chưa có lịch sử chat nào</div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {sessions.map((session) => (
+                                                    <div
+                                                        key={session.id}
+                                                        className={`p-3 rounded-xl border-2 transition-all cursor-pointer hover:bg-blue-50 ${session.id === sessionId
+                                                            ? 'border-blue-500 bg-blue-50'
+                                                            : 'border-gray-200 hover:border-blue-300'
+                                                            }`}
+                                                        onClick={() => loadSession(session.id)}
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Delete Confirmation Modal */}
-                {deleteConfirmSessionId && (
-                    <div className="absolute top-0 left-0 right-0 bottom-0 bg-black/60 z-[60] flex items-center justify-center p-6 animate-fadeIn">
-                        <div className="bg-white rounded-2xl w-full max-w-xs shadow-2xl p-6 transform scale-100 animate-scaleIn">
-                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Trash2 className="w-6 h-6 text-red-500" />
-                            </div>
-                            <h3 className="text-lg font-bold text-center text-gray-900 mb-2">Xóa đoạn chat?</h3>
-                            <p className="text-sm text-center text-gray-500 mb-6">
-                                Bạn có chắc chắn muốn xóa đoạn chat này không? Hành động này không thể hoàn tác.
-                            </p>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setDeleteConfirmSessionId(null)}
-                                    className="flex-1 py-2.5 px-4 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    onClick={async () => {
-                                        await deleteSession(deleteConfirmSessionId);
-                                        if (showHistory) fetchSessions();
-                                        setDeleteConfirmSessionId(null);
-                                    }}
-                                    className="flex-1 py-2.5 px-4 rounded-xl font-medium text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200 transition-all hover:scale-105"
-                                >
-                                    Xóa
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-                }
-
-                {/* Tabs */}
-                <div className="flex border-b border-gray-200 bg-gray-50">
-                    <button
-                        onClick={() => setActiveTab('chat')}
-                        className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'chat'
-                            ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                            : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                    >
-                        <MessageCircle className="w-4 h-4 inline-block mr-1" />
-                        Chat
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('tools')}
-                        className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'tools'
-                            ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                            : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                    >
-                        <Lightbulb className="w-4 h-4 inline-block mr-1" />
-                        Tools
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('settings')}
-                        className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'settings'
-                            ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                            : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                    >
-                        <Settings className="w-4 h-4 inline-block mr-1" />
-                        Settings
-                    </button>
-                </div>
-
-                {/* Content */}
-                <div className="overflow-hidden">
-                    {/* Chat Tab */}
-                    {activeTab === 'chat' && (
-                        <div className="flex flex-col h-[500px]">
-                            {/* Messages Area */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                                {messages.length === 0 ? (
-                                    <div className="text-center py-8">
-                                        <div className="mb-4 p-3 bg-blue-50 rounded-2xl">
-                                            <p className="text-sm text-gray-700">
-                                                Xin chào! Tôi là <span className="font-bold text-blue-600">Tobi</span> 🤖
-                                                <br />
-                                                Tôi có thể giúp gì cho bạn hôm nay?
-                                            </p>
-                                        </div>
-
-                                        {/* Quick Actions */}
-                                        <div className="space-y-2 mt-4">
-                                            <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Truy cập nhanh</p>
-
-                                            <Link
-                                                href="/tests"
-                                                className="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-xl transition-colors group"
-                                                onClick={onClose}
-                                            >
-                                                <div className="bg-blue-100 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                                                    <BookOpen className="w-5 h-5 text-blue-600" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-semibold text-gray-800 text-sm">Luyện thi</p>
-                                                    <p className="text-xs text-gray-500">Bắt đầu làm đề ngay</p>
-                                                </div>
-                                            </Link>
-
-                                            <Link
-                                                href="/flashcards"
-                                                className="flex items-center gap-3 p-3 hover:bg-purple-50 rounded-xl transition-colors group"
-                                                onClick={onClose}
-                                            >
-                                                <div className="bg-purple-100 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                                                    <Target className="w-5 h-5 text-purple-600" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-semibold text-gray-800 text-sm">Từ vựng</p>
-                                                    <p className="text-xs text-gray-500">Ôn tập flashcard</p>
-                                                </div>
-                                            </Link>
-
-                                            <Link
-                                                href="/history"
-                                                className="flex items-center gap-3 p-3 hover:bg-green-50 rounded-xl transition-colors group"
-                                                onClick={onClose}
-                                            >
-                                                <div className="bg-green-100 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                                                    <History className="w-5 h-5 text-green-600" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-semibold text-gray-800 text-sm">Lịch sử</p>
-                                                    <p className="text-xs text-gray-500">Xem tiến độ học tập</p>
-                                                </div>
-                                            </Link>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <>
-                                        {messages.map((msg) => (
-                                            <div
-                                                key={msg.id}
-                                                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                            >
-                                                <div
-                                                    className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.role === 'user'
-                                                        ? 'bg-blue-500 text-white'
-                                                        : 'bg-gray-100 text-gray-800'
-                                                        }`}
-                                                >
-                                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {isLoading && (
-                                            <div className="flex justify-start">
-                                                <div className="bg-gray-100 rounded-2xl px-4 py-2">
-                                                    <p className="text-sm text-gray-600">Tobi đang suy nghĩ...</p>
-                                                </div>
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex-1">
+                                                                <p className="font-medium text-gray-800 text-sm line-clamp-2">
+                                                                    {session.title || 'Cuộc trò chuyện mới'}
+                                                                </p>
+                                                                <p className="text-xs text-gray-500 mt-1">
+                                                                    {new Date(session.updatedAt).toLocaleDateString('vi-VN', {
+                                                                        day: '2-digit',
+                                                                        month: '2-digit',
+                                                                        year: 'numeric',
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                    })}
+                                                                </p>
+                                                            </div>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setDeleteConfirmSessionId(session.id);
+                                                                }}
+                                                                className="text-red-500 hover:bg-red-100 rounded-full p-1 ml-2"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
-                                        <div ref={messagesEndRef} />
-                                    </>
-                                )}
-                            </div>
-
-                            {/* Input Area */}
-                            <div className="p-4 border-t border-gray-200 bg-gray-50">
-                                <div className="flex items-end gap-2">
-                                    <textarea
-                                        value={inputValue}
-                                        onChange={(e) => setInputValue(e.target.value)}
-                                        onKeyDown={handleKeyPress}
-                                        placeholder="Nhắn tin cho Tobi..."
-                                        className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[40px] max-h-[100px]"
-                                        rows={1}
-                                    />
-                                    <button
-                                        onClick={handleSend}
-                                        disabled={!inputValue.trim() || isLoading}
-                                        className="bg-blue-500 text-white rounded-xl p-2 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        <Send className="w-5 h-5" />
-                                    </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Tools Tab */}
-                    {activeTab === 'tools' && (
-                        <div className="p-4 max-h-[500px] overflow-y-auto space-y-4">
-                            <DailyWord />
-                            <MiniQuiz />
-                        </div>
-                    )}
-
-                    {/* Settings Tab */}
-                    {activeTab === 'settings' && (
-                        <div className="p-4 max-h-[500px] overflow-y-auto space-y-3">
-                            <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Cài đặt</p>
-
-                            <div className="p-3 bg-gray-50 rounded-xl">
-                                <p className="text-sm font-semibold text-gray-700 mb-2">🎨 Màu sắc Tobi</p>
-                                <div className="text-xs text-gray-500">Đổi màu robot (Coming soon...)</div>
+                        {/* Delete Confirmation Modal */}
+                        {deleteConfirmSessionId && (
+                            <div className="absolute top-0 left-0 right-0 bottom-0 bg-black/60 z-[60] flex items-center justify-center p-6 animate-fadeIn">
+                                <div className="bg-white rounded-2xl w-full max-w-xs shadow-2xl p-6 transform scale-100 animate-scaleIn">
+                                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Trash2 className="w-6 h-6 text-red-500" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-center text-gray-900 mb-2">Xóa đoạn chat?</h3>
+                                    <p className="text-sm text-center text-gray-500 mb-6">
+                                        Bạn có chắc chắn muốn xóa đoạn chat này không? Hành động này không thể hoàn tác.
+                                    </p>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => setDeleteConfirmSessionId(null)}
+                                            className="flex-1 py-2.5 px-4 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                                        >
+                                            Hủy
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                await deleteSession(deleteConfirmSessionId);
+                                                if (showHistory) fetchSessions();
+                                                setDeleteConfirmSessionId(null);
+                                            }}
+                                            className="flex-1 py-2.5 px-4 rounded-xl font-medium text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200 transition-all hover:scale-105"
+                                        >
+                                            Xóa
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+                        )
+                        }
 
-                            <div className="p-3 bg-gray-50 rounded-xl">
-                                <p className="text-sm font-semibold text-gray-700 mb-2">🔔 Thông báo</p>
-                                <div className="text-xs text-gray-500">Nhắc nhở học tập (Coming soon...)</div>
-                            </div>
-
-                            <div className="p-3 bg-gray-50 rounded-xl">
-                                <p className="text-sm font-semibold text-gray-700 mb-2">ℹ️ Phiên bản</p>
-                                <div className="text-xs text-gray-500">Tobi V2.0 - AI Companion</div>
-                            </div>
+                        {/* Tabs */}
+                        <div className="flex border-b border-gray-200 bg-gray-50">
+                            <button
+                                onClick={() => setActiveTab('chat')}
+                                className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'chat'
+                                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                <MessageCircle className="w-4 h-4 inline-block mr-1" />
+                                Chat
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('tools')}
+                                className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'tools'
+                                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                <Lightbulb className="w-4 h-4 inline-block mr-1" />
+                                Tools
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('settings')}
+                                className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'settings'
+                                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                <Settings className="w-4 h-4 inline-block mr-1" />
+                                Settings
+                            </button>
                         </div>
-                    )}
-                </div>
-            </div >
-        </div >
+
+                        {/* Content */}
+                        <div className="overflow-hidden">
+                            {/* Chat Tab */}
+                            {activeTab === 'chat' && (
+                                <div className="flex flex-col h-[500px]">
+                                    {/* Messages Area */}
+                                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                                        {messages.length === 0 ? (
+                                            <div className="text-center py-8">
+                                                <div className="mb-4 p-3 bg-blue-50 rounded-2xl">
+                                                    <p className="text-sm text-gray-700">
+                                                        Xin chào! Tôi là <span className="font-bold text-blue-600">Tobi</span> 🤖
+                                                        <br />
+                                                        Tôi có thể giúp gì cho bạn hôm nay?
+                                                    </p>
+                                                </div>
+
+                                                {/* Quick Actions */}
+                                                <div className="space-y-2 mt-4">
+                                                    <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Truy cập nhanh</p>
+
+                                                    <Link
+                                                        href="/tests"
+                                                        className="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-xl transition-colors group"
+                                                        onClick={onClose}
+                                                    >
+                                                        <div className="bg-blue-100 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                                                            <BookOpen className="w-5 h-5 text-blue-600" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-gray-800 text-sm">Luyện thi</p>
+                                                            <p className="text-xs text-gray-500">Bắt đầu làm đề ngay</p>
+                                                        </div>
+                                                    </Link>
+
+                                                    <Link
+                                                        href="/flashcards"
+                                                        className="flex items-center gap-3 p-3 hover:bg-purple-50 rounded-xl transition-colors group"
+                                                        onClick={onClose}
+                                                    >
+                                                        <div className="bg-purple-100 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                                                            <Target className="w-5 h-5 text-purple-600" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-gray-800 text-sm">Từ vựng</p>
+                                                            <p className="text-xs text-gray-500">Ôn tập flashcard</p>
+                                                        </div>
+                                                    </Link>
+
+                                                    <Link
+                                                        href="/history"
+                                                        className="flex items-center gap-3 p-3 hover:bg-green-50 rounded-xl transition-colors group"
+                                                        onClick={onClose}
+                                                    >
+                                                        <div className="bg-green-100 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                                                            <History className="w-5 h-5 text-green-600" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-gray-800 text-sm">Lịch sử</p>
+                                                            <p className="text-xs text-gray-500">Xem tiến độ học tập</p>
+                                                        </div>
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {messages.map((msg) => (
+                                                    <div
+                                                        key={msg.id}
+                                                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                                    >
+                                                        <div
+                                                            className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.role === 'user'
+                                                                ? 'bg-blue-500 text-white'
+                                                                : 'bg-gray-100 text-gray-800'
+                                                                }`}
+                                                        >
+                                                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {isLoading && (
+                                                    <div className="flex justify-start">
+                                                        <div className="bg-gray-100 rounded-2xl px-4 py-2">
+                                                            <p className="text-sm text-gray-600">Tobi đang suy nghĩ...</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div ref={messagesEndRef} />
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* Input Area */}
+                                    <div className="p-4 border-t border-gray-200 bg-gray-50">
+                                        <div className="flex items-end gap-2">
+                                            <textarea
+                                                value={inputValue}
+                                                onChange={(e) => setInputValue(e.target.value)}
+                                                onKeyDown={handleKeyPress}
+                                                placeholder="Nhắn tin cho Tobi..."
+                                                className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[40px] max-h-[100px]"
+                                                rows={1}
+                                            />
+                                            <button
+                                                onClick={handleSend}
+                                                disabled={!inputValue.trim() || isLoading}
+                                                className="bg-blue-500 text-white rounded-xl p-2 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                                <Send className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Tools Tab */}
+                            {activeTab === 'tools' && (
+                                <div className="p-4 max-h-[500px] overflow-y-auto space-y-4">
+                                    <DailyWord />
+                                    <MiniQuiz />
+                                </div>
+                            )}
+
+                            {/* Settings Tab */}
+                            {activeTab === 'settings' && (
+                                <div className="p-4 max-h-[500px] overflow-y-auto space-y-3">
+                                    <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Cài đặt</p>
+
+                                    <div className="p-3 bg-gray-50 rounded-xl">
+                                        <p className="text-sm font-semibold text-gray-700 mb-2">🎨 Màu sắc Tobi</p>
+                                        <div className="text-xs text-gray-500">Đổi màu robot (Coming soon...)</div>
+                                    </div>
+
+                                    <div className="p-3 bg-gray-50 rounded-xl">
+                                        <p className="text-sm font-semibold text-gray-700 mb-2">🔔 Thông báo</p>
+                                        <div className="text-xs text-gray-500">Nhắc nhở học tập (Coming soon...)</div>
+                                    </div>
+
+                                    <div className="p-3 bg-gray-50 rounded-xl">
+                                        <p className="text-sm font-semibold text-gray-700 mb-2">ℹ️ Phiên bản</p>
+                                        <div className="text-xs text-gray-500">Tobi V2.0 - AI Companion</div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
     );
 }

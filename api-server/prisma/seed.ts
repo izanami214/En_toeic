@@ -81,6 +81,7 @@ async function main() {
         create: {
             email: 'admin@toeicmaster.com',
             fullName: 'Admin User',
+            password: '$2b$10$EpIxNwllbXW.2qB.M0r8C.f.Z.e.w.r.t.y.u.i.o.p', // password123 (placeholder)
             role: 'ADMIN',
         },
     });

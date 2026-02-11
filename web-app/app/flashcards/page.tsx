@@ -6,38 +6,42 @@ import { useState } from 'react';
 import { ArrowLeft, RotateCcw, BookOpen, Brain, TrendingUp, Plus } from 'lucide-react';
 import Link from 'next/link';
 
-const DEMO_USER_ID = '63fec151-3dfc-496d-8281-ba236a57b1d3'; // Valid ID from DB
+import { useAuthStore } from '@/lib/auth-store';
 
 export default function FlashcardsPage() {
+    const { user } = useAuthStore();
+    const userId = user?.id || '';
     const queryClient = useQueryClient();
     const [isReviewing, setIsReviewing] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
 
     const { data: cards, isLoading: isLoadingCards } = useQuery({
-        queryKey: ['flashcards', DEMO_USER_ID],
-        queryFn: () => getFlashcardsDue(DEMO_USER_ID),
+        queryKey: ['flashcards', userId],
+        queryFn: () => getFlashcardsDue(userId),
+        enabled: !!userId,
     });
 
     const { data: stats, isLoading: isLoadingStats } = useQuery({
-        queryKey: ['flashcard-stats', DEMO_USER_ID],
-        queryFn: () => getFlashcardStats(DEMO_USER_ID),
+        queryKey: ['flashcard-stats', userId],
+        queryFn: () => getFlashcardStats(userId),
+        enabled: !!userId,
     });
 
     const learnMutation = useMutation({
-        mutationFn: (count: number) => learnNewCards(DEMO_USER_ID, count),
+        mutationFn: (count: number) => learnNewCards(userId, count),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['flashcards', DEMO_USER_ID] });
-            queryClient.invalidateQueries({ queryKey: ['flashcard-stats', DEMO_USER_ID] });
+            queryClient.invalidateQueries({ queryKey: ['flashcards', userId] });
+            queryClient.invalidateQueries({ queryKey: ['flashcard-stats', userId] });
         },
     });
 
     const reviewMutation = useMutation({
         mutationFn: ({ flashcardId, rating }: { flashcardId: string; rating: number }) =>
-            reviewFlashcard(DEMO_USER_ID, flashcardId, rating),
+            reviewFlashcard(userId, flashcardId, rating),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['flashcards', DEMO_USER_ID] });
-            queryClient.invalidateQueries({ queryKey: ['flashcard-stats', DEMO_USER_ID] });
+            queryClient.invalidateQueries({ queryKey: ['flashcards', userId] });
+            queryClient.invalidateQueries({ queryKey: ['flashcard-stats', userId] });
             setCurrentIndex((prev) => prev + 1);
             setIsFlipped(false);
         },
@@ -117,19 +121,6 @@ export default function FlashcardsPage() {
                                             </span>
                                         </div>
                                     )}
-
-                                    {/* Divider */}
-                                    <div className="w-16 h-1 bg-white/10 rounded-full mb-8"></div>
-
-                                    {/* Definition */}
-                                    <div className="text-center w-full mb-8 animate-in fade-in slide-in-from-bottom-2 duration-700 delay-100 fill-mode-forwards">
-                                        <span className="inline-block text-sm text-white/50 font-medium mb-2 uppercase tracking-widest text-[10px]">Definition</span>
-                                        <p className="text-3xl font-bold text-white leading-relaxed">
-                                            {currentCard.flashcard.definition}
-                                        </p>
-                                    </div>
-
-                                    {/* Example */}
                                     {currentCard.flashcard.example && (
                                         <div className="w-full bg-black/20 rounded-xl p-6 border border-white/5 animate-in fade-in slide-in-from-bottom-3 duration-700 delay-200 fill-mode-forwards">
                                             <div className="flex gap-3">
