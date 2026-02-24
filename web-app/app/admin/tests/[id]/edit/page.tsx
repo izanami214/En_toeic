@@ -22,13 +22,13 @@ export default function EditTestPage({ params }: { params: Promise<{ id: string 
     });
 
     const updateMutation = useMutation({
-        mutationFn: (data: any) => updateTest(id, data),
+        mutationFn: (data: Record<string, unknown>) => updateTest(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tests'] });
             queryClient.invalidateQueries({ queryKey: ['test', id] });
             router.push('/admin/tests');
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             alert(`Error updating test: ${error.message}`);
         },
     });
@@ -39,12 +39,12 @@ export default function EditTestPage({ params }: { params: Promise<{ id: string 
             queryClient.invalidateQueries({ queryKey: ['tests'] });
             router.push('/admin/tests');
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             alert(`Error deleting test: ${error.message}`);
         },
     });
 
-    const handleSubmit = (data: any) => {
+    const handleSubmit = (data: Record<string, unknown>) => {
         updateMutation.mutate(data);
     };
 

@@ -1,29 +1,56 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { GamificationService } from '../gamification/gamification.service';
+
+// Shared include for fetching a test with all questions (standalone + group)
+const TEST_FULL_INCLUDE = {
+    parts: {
+        include: {
+            questions: {
+                where: { groupId: null }, // standalone only
+            },
+            groups: {
+                include: {
+                    questions: true, // group questions
+                },
+            },
+        },
+    },
+};
+
+/** Flatten all questions from a test: standalone first, then group questions */
+function getAllQuestions(test: {
+    parts: Array<{
+        questions: Array<{ id: string; correctOpt: string }>;
+        groups: Array<{ questions: Array<{ id: string; correctOpt: string }> }>;
+    }>;
+}) {
+    const qs: Array<{ id: string; correctOpt: string }> = [];
+    for (const part of test.parts) {
+        for (const q of part.questions) qs.push(q);
+        for (const group of part.groups) {
+            for (const q of group.questions) qs.push(q);
+        }
+    }
+    return qs;
+}
 
 @Injectable()
 export class TestSessionsService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private gamificationService: GamificationService,
+    ) { }
 
     /**
      * Start a new test session
      */
     async startSession(userId: string, testId: string) {
-        const test = await this.prisma.test.findUnique({
-            where: { id: testId },
-        });
-
-        if (!test) {
-            throw new Error('Test not found');
-        }
+        const test = await this.prisma.test.findUnique({ where: { id: testId } });
+        if (!test) throw new Error('Test not found');
 
         const session = await this.prisma.testSession.create({
-            data: {
-                userId,
-                testId,
-                durationTaken: 0,
-                answers: JSON.stringify([]),
-            },
+            data: { userId, testId, durationTaken: 0, answers: JSON.stringify([]) },
         });
 
         return {
@@ -36,6 +63,7 @@ export class TestSessionsService {
 
     /**
      * Submit test answers and calculate score
+     * Now includes group questions in scoring.
      */
     async submitSession(
         sessionId: string,
@@ -44,54 +72,48 @@ export class TestSessionsService {
     ) {
         const session = await this.prisma.testSession.findUnique({
             where: { id: sessionId },
-            include: {
-                test: {
-                    include: {
-                        parts: {
-                            include: {
-                                questions: true,
-                            },
-                        },
-                    },
-                },
-            },
+            include: { test: { include: TEST_FULL_INCLUDE } },
         });
 
-        if (!session) {
-            throw new Error('Session not found');
-        }
+        if (!session) throw new Error('Session not found');
 
-        // Calculate score
+        // Flatten ALL questions (standalone + group)
+        const allQuestions = getAllQuestions(session.test as Parameters<typeof getAllQuestions>[0]);
+
+        // Build a lookup map: questionId -> correctOpt
+        const questionMap = new Map(allQuestions.map(q => [q.id, q.correctOpt]));
+
         let correctCount = 0;
         const detailedAnswers = answers.map((answer) => {
-            const question = session.test.parts
-                .flatMap((p) => p.questions)
-                .find((q) => q.id === answer.questionId);
-
-            const isCorrect = question?.correctOpt === answer.selectedOption;
+            const correctOpt = questionMap.get(answer.questionId);
+            const isCorrect = correctOpt === answer.selectedOption;
             if (isCorrect) correctCount++;
 
             return {
                 questionId: answer.questionId,
                 selectedOption: answer.selectedOption,
-                correctOption: question?.correctOpt,
+                correctOption: correctOpt ?? null,
                 isCorrect,
             };
         });
 
-        // TOEIC scoring (simplified - actual TOEIC uses conversion table)
-        const totalQuestions = session.test.parts.flatMap((p) => p.questions).length;
-        const score = Math.round((correctCount / totalQuestions) * 495); // Max 495 per section
+        const totalQuestions = allQuestions.length;
+        // TOEIC simplified: max 495 per section
+        const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 495) : 0;
 
-        // Update session
+        // Update session in DB
         const updatedSession = await this.prisma.testSession.update({
             where: { id: sessionId },
-            data: {
-                score,
-                durationTaken,
-                answers: detailedAnswers,
-            },
+            data: { score, durationTaken, answers: detailedAnswers },
         });
+
+        // Award XP (base 50 + bonus)
+        const xpAmount = 50 + Math.floor(score / 5);
+        await this.gamificationService.addXp(
+            session.userId,
+            xpAmount,
+            `Completed Test: ${session.test.title}`,
+        );
 
         return {
             sessionId: updatedSession.id,
@@ -103,32 +125,20 @@ export class TestSessionsService {
     }
 
     /**
-     * Get session result
+     * Get session result with full test structure for review
      */
     async getResult(sessionId: string) {
         const session = await this.prisma.testSession.findUnique({
             where: { id: sessionId },
-            include: {
-                test: {
-                    include: {
-                        parts: {
-                            include: {
-                                questions: true,
-                            },
-                        },
-                    },
-                },
-            },
+            include: { test: { include: TEST_FULL_INCLUDE } },
         });
 
-        if (!session) {
-            throw new Error('Session not found');
-        }
+        if (!session) throw new Error('Session not found');
 
-        // Calculate total questions and correct answers
-        const totalQuestions = session.test.parts.flatMap(p => p.questions).length;
+        const allQuestions = getAllQuestions(session.test as Parameters<typeof getAllQuestions>[0]);
+        const totalQuestions = allQuestions.length;
         const answers = Array.isArray(session.answers) ? session.answers : [];
-        const correctCount = answers.filter((a: any) => a.isCorrect).length;
+        const correctCount = answers.filter((a: { isCorrect: boolean }) => a.isCorrect).length;
 
         return {
             sessionId: session.id,
@@ -140,7 +150,7 @@ export class TestSessionsService {
             durationTaken: session.durationTaken,
             submittedAt: session.submittedAt,
             answers: session.answers,
-            test: session.test, // Include full test data for review
+            test: session.test, // Full test with parts → groups → questions for review UI
         };
     }
 
@@ -150,12 +160,8 @@ export class TestSessionsService {
     async getUserHistory(userId: string) {
         const sessions = await this.prisma.testSession.findMany({
             where: { userId },
-            include: {
-                test: true,
-            },
-            orderBy: {
-                submittedAt: 'desc',
-            },
+            include: { test: true },
+            orderBy: { submittedAt: 'desc' },
         });
 
         return sessions.map((s) => ({

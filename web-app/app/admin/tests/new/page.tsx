@@ -17,12 +17,12 @@ export default function NewTestPage() {
             queryClient.invalidateQueries({ queryKey: ['tests'] });
             router.push('/admin/tests');
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             alert(`Error creating test: ${error.message}`);
         },
     });
 
-    const handleSubmit = (data: any) => {
+    const handleSubmit = (data: Record<string, unknown>) => {
         createMutation.mutate(data);
     };
 

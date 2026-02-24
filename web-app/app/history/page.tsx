@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getUserTestHistory } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
@@ -19,6 +19,12 @@ export default function HistoryPage() {
     const userId = user?.id;
     const [filterType, setFilterType] = useState<TestType>('ALL');
     const [sortBy, setSortBy] = useState<SortOption>('date-desc');
+    const [now, setNow] = useState<number | null>(null);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setNow(Date.now());
+    }, []);
 
     const { data: sessions, isLoading, error } = useQuery({
         queryKey: ['history', userId],
@@ -46,10 +52,10 @@ export default function HistoryPage() {
     let filteredSessions = sessions || [];
 
     if (filterType !== 'ALL') {
-        filteredSessions = filteredSessions.filter((s: any) => s.testType === filterType);
+        filteredSessions = filteredSessions.filter((s: { testType?: string }) => s.testType === filterType);
     }
 
-    filteredSessions = [...filteredSessions].sort((a: any, b: any) => {
+    filteredSessions = [...filteredSessions].sort((a: { submittedAt: string; score?: number }, b: { submittedAt: string; score?: number }) => {
         switch (sortBy) {
             case 'date-desc':
                 return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
@@ -65,14 +71,14 @@ export default function HistoryPage() {
     });
 
     // Prepare data for charts
-    const chartData = (sessions || []).map((s: any) => ({
+    const chartData = (sessions || []).map((s: { submittedAt: string; score?: number; testTitle?: string }) => ({
         date: new Date(s.submittedAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
         score: s.score || 0,
         title: s.testTitle,
         fullDate: s.submittedAt, // For activity chart
     }));
 
-    const activityData = (sessions || []).map((s: any) => ({
+    const activityData = (sessions || []).map((s: { submittedAt: string }) => ({
         date: s.submittedAt
     }));
 
@@ -175,11 +181,11 @@ export default function HistoryPage() {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {filteredSessions.map((session: any) => {
+                            {filteredSessions.map((session: { score?: number; submittedAt: string; sessionId?: string; testTitle?: string; testType?: string; durationTaken: number; testId?: string }) => {
                                 const scoreClass = (session.score || 0) >= 400 ? 'text-green-600' : 'text-blue-600';
                                 const isHighScore = (session.score || 0) >= 450;
                                 const date = new Date(session.submittedAt);
-                                const isRecent = (Date.now() - date.getTime()) < 24 * 60 * 60 * 1000;
+                                const isRecent = now ? (now - date.getTime()) < 24 * 60 * 60 * 1000 : false;
 
                                 return (
                                     <div
@@ -258,13 +264,13 @@ export default function HistoryPage() {
                                 </div>
                                 <div className="bg-green-50 rounded-lg p-4">
                                     <div className="text-2xl font-bold text-green-600">
-                                        {Math.round(filteredSessions.reduce((acc: number, s: any) => acc + (s.score || 0), 0) / filteredSessions.length)}
+                                        {Math.round(filteredSessions.reduce((acc: number, s: { score?: number }) => acc + (s.score || 0), 0) / filteredSessions.length)}
                                     </div>
                                     <div className="text-sm text-gray-600">Điểm trung bình</div>
                                 </div>
                                 <div className="bg-yellow-50 rounded-lg p-4">
                                     <div className="text-2xl font-bold text-yellow-600">
-                                        {Math.max(...filteredSessions.map((s: any) => s.score || 0))}
+                                        {Math.max(...filteredSessions.map((s: { score?: number }) => s.score || 0))}
                                     </div>
                                     <div className="text-sm text-gray-600">Điểm cao nhất</div>
                                 </div>

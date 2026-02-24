@@ -20,11 +20,14 @@ function numberToCardState(state: number): CardState {
   return map[state];
 }
 
+import { GamificationService } from '../gamification/gamification.service';
+
 @Injectable()
 export class FlashcardsService {
   constructor(
     private prisma: PrismaService,
     private fsrs: FsrsService,
+    private gamificationService: GamificationService,
   ) { }
 
   /**
@@ -90,6 +93,9 @@ export class FlashcardsService {
         lastReview: updatedCard.lastReview,
       },
     });
+
+    // Award XP (10 XP per review)
+    await this.gamificationService.addXp(userId, 10, 'Flashcard Review');
 
     return updatedCard;
   }

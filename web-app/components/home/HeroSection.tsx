@@ -10,6 +10,7 @@ export default function HeroSection() {
 
     useEffect(() => {
         const hour = new Date().getHours();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setGreeting(hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối');
 
         const quotes = [

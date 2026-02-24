@@ -82,9 +82,9 @@ export default function TestsListPage() {
                 </div>
             ) : (
                 <div className="grid gap-6">
-                    {tests?.map((test: any) => {
+                    {Array.isArray(tests) && tests.map((test: { id: string; title: string; type: string; duration: number; parts?: { questions?: unknown[] }[] }) => {
                         const totalQuestions = test.parts?.reduce(
-                            (sum: number, part: any) => sum + (part.questions?.length || 0),
+                            (sum: number, part: { questions?: unknown[] }) => sum + (part.questions?.length || 0),
                             0
                         ) || 0;
 

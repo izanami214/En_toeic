@@ -24,6 +24,7 @@ export default function AICompanion() {
         };
 
         const contextMessage = messages[pathname] || 'Cần trợ giúp không? 🤖';
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMessage(contextMessage);
         setShowBubble(true);
 
@@ -41,9 +42,7 @@ export default function AICompanion() {
             }
 
             // Wake up if sleeping
-            if (mascotState === 'sleeping') {
-                setMascotState('idle');
-            }
+            setMascotState(prev => prev === 'sleeping' ? 'idle' : prev);
 
             // Set new timer for 2 minutes (120000 ms)
             idleTimerRef.current = setTimeout(() => {
@@ -71,7 +70,7 @@ export default function AICompanion() {
                 clearTimeout(idleTimerRef.current);
             }
         };
-    }, [mascotState, isOpen]);
+    }, [isOpen]);
 
     const handleToggle = () => {
         setIsOpen(!isOpen);

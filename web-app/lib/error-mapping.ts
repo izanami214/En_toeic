@@ -1,11 +1,20 @@
-export const getErrorMessage = (error: any): string => {
+import { AxiosError } from 'axios';
+
+export const getErrorMessage = (error: unknown): string => {
     const defaultMessage = 'Đã có lỗi xảy ra. Vui lòng thử lại sau.';
 
-    if (!error?.response?.data) {
+    if (typeof error !== 'object' || error === null || !('response' in error)) {
         return defaultMessage;
     }
 
-    const { message, error: errorType } = error.response.data;
+    const axiosError = error as AxiosError<{ message?: string | string[] }>;
+
+    if (!axiosError.response?.data) {
+        return defaultMessage;
+    }
+
+    const { message } = axiosError.response.data;
+    if (!message) return defaultMessage;
 
     // Handle array of messages (e.g. from class-validator)
     const msg = Array.isArray(message) ? message[0] : message;

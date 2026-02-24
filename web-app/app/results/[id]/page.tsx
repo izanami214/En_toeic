@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getSessionResult } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Trophy, Clock, CheckCircle, XCircle, Home } from 'lucide-react';
+import { Trophy, CheckCircle, XCircle, Home } from 'lucide-react';
 
 export default function ResultPage() {
     const params = useParams();
@@ -32,7 +32,7 @@ export default function ResultPage() {
         );
     }
 
-    const correctCount = result.answers.filter((a: any) => a.isCorrect).length;
+    const correctCount = result.answers.filter((a: { isCorrect: boolean }) => a.isCorrect).length;
     const totalQuestions = result.answers.length;
     const accuracy = Math.round((correctCount / totalQuestions) * 100);
     const minutes = Math.floor(result.durationTaken / 60);
@@ -106,12 +106,12 @@ export default function ResultPage() {
                 <div className="bg-white rounded-xl shadow-xl p-8">
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">Chi Tiết Đáp Án</h2>
                     <div className="space-y-4">
-                        {result.answers.map((answer: any, idx: number) => (
+                        {result.answers.map((answer: { isCorrect: boolean; selectedOption: string; correctOption: string }, idx: number) => (
                             <div
                                 key={idx}
                                 className={`p-4 rounded-lg border-2 ${answer.isCorrect
-                                        ? 'border-green-200 bg-green-50'
-                                        : 'border-red-200 bg-red-50'
+                                    ? 'border-green-200 bg-green-50'
+                                    : 'border-red-200 bg-red-50'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">

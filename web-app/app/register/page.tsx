@@ -40,7 +40,7 @@ export default function RegisterPage() {
 
             login(user, access_token);
             router.push('/');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Register error:', err);
             setError(getErrorMessage(err));
         } finally {

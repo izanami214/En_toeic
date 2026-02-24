@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getUserTestHistory } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
-import { Trophy, Target, BookOpen, TrendingUp } from 'lucide-react';
+import { Trophy, Target, TrendingUp } from 'lucide-react';
 
 export default function StatsOverview() {
     const { user } = useAuthStore();
@@ -16,10 +16,10 @@ export default function StatsOverview() {
 
     const testsTaken = sessions?.length || 0;
     const avgScore = sessions?.length
-        ? Math.round(sessions.reduce((acc: number, s: any) => acc + (s.score || 0), 0) / sessions.length)
+        ? Math.round(sessions.reduce((acc: number, s: { score?: number }) => acc + (s.score || 0), 0) / sessions.length)
         : 0;
     const highScore = sessions?.length
-        ? Math.max(...sessions.map((s: any) => s.score || 0))
+        ? Math.max(...sessions.map((s: { score?: number }) => s.score || 0))
         : 0;
 
     const stats = [

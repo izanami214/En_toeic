@@ -45,6 +45,37 @@ model User {
   testSessions  TestSession[]
   flashcards    UserFlashcard[]
   chatSessions  ChatSession[]
+
+  // Gamification
+  xp            Int       @default(0)
+  level         Int       @default(1)
+  streak        Int       @default(0)
+  lastActivity  DateTime  @default(now())
+  
+  badges        UserBadge[]
+}
+
+model Badge {
+  id          String    @id @default(uuid())
+  code        String    @unique // e.g. 'FIRST_TEST', 'STREAK_7'
+  name        String
+  description String
+  icon        String    // Icon name from Lucide or URL
+  condition   String?   // Helper for backend logic
+  xpReward    Int       @default(0)
+  
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  badgeId   String
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  earnedAt  DateTime @default(now())
+
+  @@unique([userId, badgeId])
 }
 
 model Test {
@@ -63,18 +94,40 @@ model Part {
   id          String    @id @default(uuid())
   testId      String
   test        Test      @relation(fields: [testId], references: [id])
-  partNumber  Int       // 1-7, or grouped like 1 (Part 1), 2 (Part 5) etc.
+  partNumber  Int       // 1-7
   
+  questions   Question[]       // standalone questions (no passage)
+  groups      QuestionGroup[]  // grouped questions (with passage/audio)
+}
+
+// A passage/audio group: multiple questions share one context
+model QuestionGroup {
+  id          String    @id @default(uuid())
+  partId      String
+  part        Part      @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  title       String?           // e.g. "Questions 147-150 refer to the following email."
+  passage     String?   @db.Text // The reading text
+  imageUrl    String?            // Optional image for the passage
+  audioUrl    String?            // Shared audio clip
+  orderIndex  Int       @default(0)
+
   questions   Question[]
 }
 
 model Question {
   id          String    @id @default(uuid())
-  partId      String
-  part        Part      @relation(fields: [partId], references: [id])
-  content     String?   // Text content
-  imageUrl    String?   // For Part 1 matches
-  audioUrl    String?   // Audio fragment
+  
+  // A question belongs to EITHER a Part (standalone) OR a QuestionGroup (reading/listening)
+  partId      String?
+  part        Part?          @relation(fields: [partId], references: [id], onDelete: Cascade)
+  groupId     String?
+  group       QuestionGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  orderIndex  Int       @default(0)
+  content     String?   // Question stem
+  imageUrl    String?   // Per-question image (if needed)
+  audioUrl    String?   // Per-question audio (if needed)
   transcript  String?
   
   options     Json      // { A: "...", B: "...", C: "...", D: "..." }

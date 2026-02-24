@@ -128,7 +128,7 @@ export default function FlashcardsPage() {
                                                 <div className="text-left">
                                                     <div className="text-xs text-blue-300 font-bold uppercase tracking-wider mb-1">Example</div>
                                                     <p className="text-lg text-white/90 italic font-medium leading-relaxed">
-                                                        "{currentCard.flashcard.example}"
+                                                        &quot;{currentCard.flashcard.example}&quot;
                                                     </p>
                                                 </div>
                                             </div>

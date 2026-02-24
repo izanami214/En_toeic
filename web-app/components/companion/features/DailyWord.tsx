@@ -42,7 +42,7 @@ export default function DailyWord() {
 
             {/* Example */}
             <div className="mb-4 p-3 bg-blue-50 rounded-xl border border-blue-200">
-                <p className="text-sm text-gray-600 italic">"{word.example}"</p>
+                <p className="text-sm text-gray-600 italic">&quot;{word.example}&quot;</p>
             </div>
 
             {/* Actions */}
@@ -57,8 +57,8 @@ export default function DailyWord() {
                 <button
                     onClick={() => setIsLearned(!isLearned)}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${isLearned
-                            ? 'bg-green-500 text-white'
-                            : 'bg-white border-2 border-green-500 text-green-600 hover:bg-green-50'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-white border-2 border-green-500 text-green-600 hover:bg-green-50'
                         }`}
                 >
                     <CheckCircle className="w-4 h-4" />

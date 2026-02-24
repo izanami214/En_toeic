@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 interface QuestionFormProps {
     question: {
@@ -13,7 +12,7 @@ interface QuestionFormProps {
         audioUrl?: string;
         transcript?: string;
     };
-    onChange: (question: any) => void;
+    onChange: (question: QuestionFormProps['question']) => void;
     onRemove: () => void;
     index: number;
 }

@@ -7,9 +7,17 @@ import { TestSessionsModule } from './test-sessions/test-sessions.module';
 
 import { CompanionModule } from './companion/companion.module';
 import { AuthModule } from './auth/auth.module';
+import { GamificationModule } from './gamification/gamification.module';
 
 @Module({
-  imports: [TestsModule, FlashcardsModule, TestSessionsModule, CompanionModule, AuthModule],
+  imports: [
+    TestsModule,
+    FlashcardsModule,
+    TestSessionsModule,
+    CompanionModule,
+    AuthModule,
+    GamificationModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

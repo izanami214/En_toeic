@@ -53,7 +53,7 @@ export default function TestsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {tests?.map((test: any) => (
+                    {tests?.map((test: { id: string; title: string; duration: number; type: string; parts?: unknown[] }) => (
                         <Link
                             key={test.id}
                             href={`/tests/${test.id}`}

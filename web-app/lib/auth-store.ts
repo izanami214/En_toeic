@@ -1,12 +1,34 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface User {
+export interface Badge {
+    id: string;
+    code: string;
+    name: string;
+    description: string;
+    icon: string;
+    xpReward: number;
+}
+
+export interface UserBadge {
+    id: string;
+    userId: string;
+    badgeId: string;
+    earnedAt: string;
+    badge: Badge;
+}
+
+export interface User {
     id: string;
     email: string;
     fullName: string | null;
     role: string;
     avatarUrl?: string | null;
+    xp: number;
+    level: number;
+    streak: number;
+    lastActivity?: string; // Date string
+    badges?: UserBadge[];
 }
 
 interface AuthState {

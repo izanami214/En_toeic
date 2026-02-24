@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { isAuthenticated, user } = useAuthStore();
+    const { isAuthenticated } = useAuthStore();
     const router = useRouter();
     const pathname = usePathname();
     const [isChecking, setIsChecking] = useState(true);
@@ -21,6 +21,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
             // sessionStorage.setItem('redirectUrl', pathname);
             router.push('/login');
         } else {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsChecking(false);
         }
     }, [isAuthenticated, router, pathname]);

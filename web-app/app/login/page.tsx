@@ -28,7 +28,7 @@ export default function LoginPage() {
 
             login(user, access_token);
             router.push('/');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Login error:', err);
             setError(getErrorMessage(err));
         } finally {

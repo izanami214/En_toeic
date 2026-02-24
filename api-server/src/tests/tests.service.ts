@@ -7,9 +7,6 @@ import { UpdateTestDto } from './dto/update-test.dto';
 export class TestsService {
   constructor(private prisma: PrismaService) { }
 
-  /**
-   * Create a new test with parts and questions
-   */
   async create(createTestDto: CreateTestDto) {
     const { parts, ...testData } = createTestDto;
 
@@ -19,8 +16,9 @@ export class TestsService {
         parts: {
           create: parts.map((part) => ({
             partNumber: part.partNumber,
+            // Standalone questions (no passage)
             questions: {
-              create: part.questions.map((q) => ({
+              create: (part.questions || []).map((q, idx) => ({
                 content: q.content,
                 options: q.options,
                 correctOpt: q.correctOpt,
@@ -28,52 +26,49 @@ export class TestsService {
                 imageUrl: q.imageUrl,
                 audioUrl: q.audioUrl,
                 transcript: q.transcript,
+                orderIndex: q.orderIndex ?? idx,
+              })),
+            },
+            // Grouped questions with passage/audio
+            groups: {
+              create: (part.groups || []).map((g, gIdx) => ({
+                title: g.title,
+                passage: g.passage,
+                imageUrl: g.imageUrl,
+                audioUrl: g.audioUrl,
+                orderIndex: g.orderIndex ?? gIdx,
+                questions: {
+                  create: (g.questions || []).map((q, qIdx) => ({
+                    content: q.content,
+                    options: q.options,
+                    correctOpt: q.correctOpt,
+                    explanation: q.explanation,
+                    imageUrl: q.imageUrl,
+                    audioUrl: q.audioUrl,
+                    transcript: q.transcript,
+                    orderIndex: q.orderIndex ?? qIdx,
+                  })),
+                },
               })),
             },
           })),
         },
       },
-      include: {
-        parts: {
-          include: {
-            questions: true,
-          },
-        },
-      },
+      include: this.fullInclude(),
     });
   }
 
-  /**
-   * Get all tests with parts
-   */
   async findAll() {
     return this.prisma.test.findMany({
-      include: {
-        parts: {
-          include: {
-            questions: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      include: this.fullInclude(),
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  /**
-   * Get a single test by ID
-   */
   async findOne(id: string) {
     const test = await this.prisma.test.findUnique({
       where: { id },
-      include: {
-        parts: {
-          include: {
-            questions: true,
-          },
-        },
-      },
+      include: this.fullInclude(),
     });
 
     if (!test) {
@@ -83,37 +78,47 @@ export class TestsService {
     return test;
   }
 
-  /**
-   * Update test metadata (title, type, duration)
-   */
   async update(id: string, updateTestDto: UpdateTestDto) {
-    // Check if test exists
     await this.findOne(id);
 
     return this.prisma.test.update({
       where: { id },
       data: updateTestDto,
-      include: {
-        parts: {
-          include: {
-            questions: true,
-          },
-        },
-      },
+      include: this.fullInclude(),
     });
   }
 
-  /**
-   * Delete test (cascades to parts and questions)
-   */
   async remove(id: string) {
-    // Check if test exists
     await this.findOne(id);
 
-    await this.prisma.test.delete({
-      where: { id },
-    });
+    await this.prisma.test.delete({ where: { id } });
 
     return { message: 'Test deleted successfully' };
+  }
+
+  /**
+   * Shared include object so all queries return the same nested shape.
+   * Part -> groups (with questions) + standalone questions, ordered.
+   */
+  private fullInclude() {
+    return {
+      parts: {
+        orderBy: { partNumber: 'asc' as const },
+        include: {
+          questions: {
+            where: { groupId: null }, // standalone only
+            orderBy: { orderIndex: 'asc' as const },
+          },
+          groups: {
+            orderBy: { orderIndex: 'asc' as const },
+            include: {
+              questions: {
+                orderBy: { orderIndex: 'asc' as const },
+              },
+            },
+          },
+        },
+      },
+    };
   }
 }

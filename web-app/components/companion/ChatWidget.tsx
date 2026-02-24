@@ -18,7 +18,7 @@ export default function ChatWidget({ onClose }: ChatWidgetProps) {
     const [inputValue, setInputValue] = useState('');
     const [showHistory, setShowHistory] = useState(false);
     const [deleteConfirmSessionId, setDeleteConfirmSessionId] = useState<string | null>(null);
-    const [sessions, setSessions] = useState<any[]>([]);
+    const [sessions, setSessions] = useState<{ id: string; title?: string; updatedAt: string }[]>([]);
     const [loadingSessions, setLoadingSessions] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -56,7 +56,7 @@ export default function ChatWidget({ onClose }: ChatWidgetProps) {
         try {
             const response = await fetch(`http://localhost:3000/companion/history/${sessionIdToLoad}`);
             if (response.ok) {
-                const sessionData = await response.json();
+                await response.json();
                 // This will be handled by useChat hook's effect
                 window.location.reload(); // Temporary: reload to load the session
             }

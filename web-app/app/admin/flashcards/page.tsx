@@ -3,7 +3,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
-import Link from 'next/link';
 
 // Fetch all flashcards from backend
 async function getAllFlashcards() {
@@ -20,10 +19,10 @@ export default function AdminFlashcardsPage() {
         queryFn: getAllFlashcards,
     });
 
-    const filteredFlashcards = flashcards?.filter((card: any) =>
+    const filteredFlashcards = Array.isArray(flashcards) ? flashcards.filter((card: { word?: string; definition?: string }) =>
         card.word?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         card.definition?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    ) : [];
 
     if (isLoading) {
         return (
@@ -99,7 +98,7 @@ export default function AdminFlashcardsPage() {
 
             {/* Flashcards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredFlashcards?.map((card: any) => (
+                {filteredFlashcards?.map((card: { id: string; word: string; definition: string; pronunciation?: string; example?: string }) => (
                     <div
                         key={card.id}
                         className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6 hover:bg-white/15 transition-all"
@@ -115,7 +114,7 @@ export default function AdminFlashcardsPage() {
                         {card.example && (
                             <div className="mt-4 pt-4 border-t border-white/10">
                                 <div className="text-sm text-blue-300 italic">
-                                    "{card.example}"
+                                    &quot;{card.example}&quot;
                                 </div>
                             </div>
                         )}

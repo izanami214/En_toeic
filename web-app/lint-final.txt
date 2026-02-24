@@ -1,0 +1,165 @@
+
+> web-app@0.1.0 lint
+> eslint
+
+
+D:\Workspace\Minh\Test\WebEng\web-app\app\history\page.tsx
+  25:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Workspace\Minh\Test\WebEng\web-app\app\history\page.tsx:25:9
+  23 |
+  24 |     useEffect(() => {
+> 25 |         setNow(Date.now());
+     |         ^^^^^^ Avoid calling setState() directly within an effect
+  26 |     }, []);
+  27 |
+  28 |     const { data: sessions, isLoading, error } = useQuery({  react-hooks/set-state-in-effect
+
+D:\Workspace\Minh\Test\WebEng\web-app\app\profile\page.tsx
+  8:10  warning  'Separator' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Workspace\Minh\Test\WebEng\web-app\app\results\[id]\page.tsx
+  7:18  warning  'Clock' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Workspace\Minh\Test\WebEng\web-app\app\tests\[id]\page.tsx
+   6:8    warning  'Link' is defined but never used       @typescript-eslint/no-unused-vars
+  91:207  warning  'partIndex' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Workspace\Minh\Test\WebEng\web-app\app\tests\[id]\result\[sessionId]\page.tsx
+    7:43  warning  'Clock' is defined but never used                                @typescript-eslint/no-unused-vars
+   40:61  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   84:76  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  154:91  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  155:72  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+D:\Workspace\Minh\Test\WebEng\web-app\app\tests\[id]\take\page.tsx
+   3:31  warning  'useCallback' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   7:44  warning  'CheckCircle' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   7:57  warning  'Flag' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  46:21  error    Error: Cannot access variable before it is declared
+
+`handleSubmit` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+D:\Workspace\Minh\Test\WebEng\web-app\app\tests\[id]\take\page.tsx:46:21
+  44 |                 if (prev !== null && prev <= 1) {
+  45 |                     clearInterval(timer);
+> 46 |                     handleSubmit(true); // Auto submit
+     |                     ^^^^^^^^^^^^ `handleSubmit` accessed before it is declared
+  47 |                     return 0;
+  48 |                 }
+  49 |                 return prev !== null ? prev - 1 : 0;
+
+D:\Workspace\Minh\Test\WebEng\web-app\app\tests\[id]\take\page.tsx:70:5
+  68 |     };
+  69 |
+> 70 |     async function handleSubmit(auto = false) {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 71 |         if (!sessionId) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |             alert('Lỗi: Không tìm thấy phiên làm bài (Session ID missing).');
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^
+> 94 |         }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^
+> 95 |     };
+     | ^^^^^^ `handleSubmit` is declared here
+  96 |
+  97 |     const handleExit = () => {
+  98 |         if (confirm('Bạn có chắc chắn muốn thoát? Tiến trình làm bài sẽ không được lưu.')) {  react-hooks/immutability
+  54:8   warning  React Hook useEffect has a missing dependency: 'handleSubmit'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+
+D:\Workspace\Minh\Test\WebEng\web-app\app\tests\page.tsx
+  56:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\auth\AdminProtectedLayout.tsx
+  20:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\auth\AdminProtectedLayout.tsx:20:13
+  18 |
+  19 |         if (user?.role !== 'ADMIN') {
+> 20 |             setIsChecking(false); // Stop checking, let role error render
+     |             ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |             return; // Stay on page to show forbidden message or redirect
+  22 |         }
+  23 |  react-hooks/set-state-in-effect
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\auth\ProtectedRoute.tsx
+   9:30  warning  'user' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  24:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\auth\ProtectedRoute.tsx:24:13
+  22 |             router.push('/login');
+  23 |         } else {
+> 24 |             setIsChecking(false);
+     |             ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |         }
+  26 |     }, [isAuthenticated, router, pathname]);
+  27 |  react-hooks/set-state-in-effect
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\companion\AICompanion.tsx
+  27:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\companion\AICompanion.tsx:27:9
+  25 |
+  26 |         const contextMessage = messages[pathname] || 'Cần trợ giúp không? 🤖';
+> 27 |         setMessage(contextMessage);
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  28 |         setShowBubble(true);
+  29 |
+  30 |         // Auto-hide bubble after 5 seconds  react-hooks/set-state-in-effect
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\companion\ChatWidget.tsx
+  21:46  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  59:23  warning  'sessionData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\companion\features\DailyWord.tsx
+  45:61  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  45:76  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\gamification\BadgeList.tsx
+  3:17  warning  'Lock' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\home\HeroSection.tsx
+  13:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Workspace\Minh\Test\WebEng\web-app\components\home\HeroSection.tsx:13:9
+  11 |     useEffect(() => {
+  12 |         const hour = new Date().getHours();
+> 13 |         setGreeting(hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối');
+     |         ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  14 |
+  15 |         const quotes = [
+  16 |             'Mỗi ngày luyện tập là một bước tiến gần hơn đến mục tiêu!',  react-hooks/set-state-in-effect
+
+✖ 26 problems (14 errors, 12 warnings)
+

@@ -8,31 +8,41 @@ import { Loader2, ShieldAlert } from 'lucide-react';
 export default function AdminProtectedLayout({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, user } = useAuthStore();
     const router = useRouter();
-    const [isChecking, setIsChecking] = useState(true);
+    // isHydrated prevents Server-side "flash" before Zustand loads from localStorage.
+    const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
+        setIsHydrated(true);
+    }, []);
+
+    useEffect(() => {
+        if (!isHydrated) return;
+
         if (!isAuthenticated) {
             router.push('/login');
-            return;
         }
+    }, [isHydrated, isAuthenticated, router]);
 
-        if (user?.role !== 'ADMIN') {
-            setIsChecking(false); // Stop checking, let role error render
-            return; // Stay on page to show forbidden message or redirect
-        }
-
-        setIsChecking(false);
-    }, [isAuthenticated, user, router]);
-
-    if (isChecking) {
+    // Still waiting for client-side hydration
+    if (!isHydrated) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-900">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950">
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
             </div>
         );
     }
 
-    if (isAuthenticated && user?.role !== 'ADMIN') {
+    // Hydrated but not logged in — show loader while redirecting
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950">
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
+            </div>
+        );
+    }
+
+    // Logged in but not ADMIN role
+    if (user?.role !== 'ADMIN') {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
                 <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md border border-gray-100">

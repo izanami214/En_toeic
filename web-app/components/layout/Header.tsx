@@ -33,9 +33,12 @@ export default function Header() {
                     <div className="ml-10 space-x-4">
                         {isAuthenticated && user ? (
                             <div className="flex items-center gap-4">
-                                <span className="text-sm font-medium text-gray-700">
+                                <Link
+                                    href="/profile"
+                                    className="text-sm font-medium text-gray-700 hover:text-indigo-600"
+                                >
                                     Xin chào, {user.fullName || user.email}
-                                </span>
+                                </Link>
                                 <button
                                     onClick={handleLogout}
                                     className="rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 border border-gray-300"

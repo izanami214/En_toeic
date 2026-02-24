@@ -22,6 +22,16 @@ apiClient.interceptors.request.use(
     }
 );
 
+export const getDailyWord = async () => {
+    const response = await apiClient.get('/companion/daily-word');
+    return response.data;
+};
+
+export const getLeaderboard = async (limit = 10) => {
+    const response = await apiClient.get(`/gamification/leaderboard?limit=${limit}`);
+    return response.data;
+};
+
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
