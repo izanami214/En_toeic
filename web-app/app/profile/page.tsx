@@ -25,7 +25,8 @@ export default function ProfilePage() {
                 <CardContent className="pt-6">
                     <div className="flex flex-col md:flex-row items-center gap-6">
                         <Avatar className="w-24 h-24 border-4 border-primary/10">
-                            <AvatarImage src={user.avatarUrl || ''} />
+                            {/* Avatar chung cho tất cả các user */}
+                            <AvatarImage src={'https://api.dicebear.com/9.x/notionists/svg?seed=' + user.email} />
                             <AvatarFallback className="text-2xl">{user.fullName?.[0] || 'U'}</AvatarFallback>
                         </Avatar>
 
